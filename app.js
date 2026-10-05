@@ -32,18 +32,51 @@ const crearTarjeta=(pelicula)=>{
 
 const iniciar =async()=>{
     console.log('Mostrar pelicula');
-    const peliculas=await obtenerPeliculas();
-    console.log(`${peliculas.length} pelis obtenidas`);
+    mostrarLoading();
+    try{
+        const peliculas=await obtenerPeliculas();
+        console.log(`${peliculas.length} pelis obtenidas`);
+        ocultarLoading();
+        moviesgrid.innerHTML=peliculas.map(crearTarjeta).join('');
+        console.log('Primera pelicula renderizada');
+    }catch(error){
+        console.log('Error doh!',error);
+        let mensaje='No se pudo cargar peliulas';
+        if(error.message.includes('401')){
+            mensaje='API key invalida, verifica tu clave';
+        }else if(error.message.includes('429')){
+            mensaje='Existen demasiadas peticiones. Espera un momento';
+        }else if(error.message.includes('fetch')){
+            mensaje='Error de red';
+        }
+        mostrarError();
+    }
     /* const primera=peliculas[0];
     console.log('Primera pelicula',primera); */
-    moviesgrid.innerHTML=peliculas.map(crearTarjeta).join('');
-    console.log('Primera pelicula renderizada');
+    
 }
 
 iniciar();
 
+const loadingDiv=document.getElementById('loading');
+const erroDiv=document.getElementById('error');
+const errorMessage=document.getElementById('error-message');
 
+const mostrarLoading=()=>{
+    loadingDiv.style.display='flex';
+    erroDiv.style.display='none';
+    moviesgrid.innerHTML='';
+}
 
+const ocultarLoading=()=>{
+    loadingDiv.style.display='none';
+}
+const mostrarError=(mensaje)=>{
+    ocultarLoading();
+    errorMessage=mensaje;
+    erroDiv.style.display='flex';
+    moviesgrid.innerHTML='';
+}
 /* const probarApi =async()=> {
     const url = `${BASE_URL}/movie/popular?api_key=${API_KEY}&language=es-ES`;
     console.log('Url de la peticion',url);
